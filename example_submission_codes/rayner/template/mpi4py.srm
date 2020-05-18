@@ -1,0 +1,39 @@
+#!/bin/bash
+# Autor: Rayner Mauricio e Lucas Verdade 06/05/2020 LabEEE - PRJEEESD2020
+
+# CONFIGURACOES !ESSENCIAIS! DE RECURSOS DO JOB
+#SBATCH --nodes=4 #Numero de Nós
+#SBATCH --ntasks-per-node=24 #Numero de tarefas por Nó
+#SBATCH --cpus-per-task=1 #Numero de threads por tarefa MPI
+#SBATCH -p cpu_dev #Fila (partition) a ser utilizada
+
+# CONFIGURACOES ADICIONAIS DO JOB
+#SBATCH -J teste1_rayner #Nome job
+#SBATCH --exclusive #Utilização exclusiva dos nós durante a execução do job
+#SBATCH -o output.%J              #Job output
+
+# OBSERVACAO IMPORTANTE: nodes * ntasks-per-node * cpus-per-tasks >= Número máximo de nós (NÚCLEOS)
+
+
+# COMENTARIOS DO JOB=491749
+# fila cpu_dev tem máximo de 4 nós (96 núcleos), portanto nodes * ntasks-per-node * cpus-per-tasks >= 96
+# Isso serve para as outras filas também. É preciso verificar o máximo possível da fila, senão o job nem será submetido.
+# Tasks são executadas paralelamente e ao atribuir cpus-per-tasks=1 você tem ntasks rodando simultaneamente. 
+# Os resultados são salvos de acordo com o numero do job. O ultimo exemplo salvo é o jobid=491749. Seu csv foi salvo com esse id.
+# Isso evita que os resultados sejam sobrescritos.
+# FIM DAS COMENTARIOS
+
+#Exibe os nos alocados para o Job
+echo $SLURM_JOB_NODELIST
+nodeset -e $SLURM_JOB_NODELIST
+
+cd $SLURM_SUBMIT_DIR
+
+#Configura os compiladores
+module purge
+module load openmpi/icc/2.0.4.2 
+module load python/3.7.2
+module load intel_psxe/2019
+
+# programa em python recebendo como argumento o JOBID
+srun --resv-ports python teste.py $SLURM_JOB_ID
